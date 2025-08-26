@@ -10,12 +10,82 @@ class Comment {
         $this->conn = $conn;
     }
 
-    public function getId() { return $this->id; }
-    public function getContent() { return $this->content; }
+    /**
+     * Get the value of id
+     */ 
+    public function getId()
+    {
+        return $this->id;
+    }
 
-    public function setTaskId($task_id) { $this->task_id = $task_id; }
-    public function setContent($content) { 
+    /**
+     * Set the value of id
+     *
+     * @return  self
+     */ 
+    public function setId($id)
+    {
+        $this->id = $id;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of task_id
+     */ 
+    public function getTaskId()
+    {
+        return $this->task_id;
+    }
+
+    /**
+     * Set the value of task_id
+     *
+     * @return  self
+     */ 
+    public function setTaskId($task_id)
+    {
+        $this->task_id = $task_id;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of content
+     */ 
+    public function getContent()
+    {
+        return $this->content;
+    }
+
+    /**
+     * Set the value of content
+     *
+     * @return  self
+     */ 
+    public function setContent($content)
+    {
         if(!empty($content)) $this->content = $content; 
+    }
+
+    /**
+     * Get the value of created_at
+     */ 
+    public function getCreated_at()
+    {
+        return $this->created_at;
+    }
+
+    /**
+     * Set the value of created_at
+     *
+     * @return  self
+     */ 
+    public function setCreated_at($created_at)
+    {
+        $this->created_at = $created_at;
+
+        return $this;
     }
 
     public function add() {
