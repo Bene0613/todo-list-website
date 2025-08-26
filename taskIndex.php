@@ -12,7 +12,7 @@ $db = new Database("localhost", "root", "", "todo");
 $user_id = $_SESSION['user_id'];
 
 if (isset($_GET['id'])) {
-    $task_id = $_GET['id'];
+    $task_id = $_GET['id'];         //bron Web tech knowledge youtube
     $del_stmt = $db->prepare("DELETE FROM tasks WHERE id = ?");
     $del_stmt->bind_param("i", $task_id);
     $del_stmt->execute();
@@ -44,7 +44,7 @@ if (isset($_POST['save_edit'])) {
     $task_id = $_POST['task_id'];
     $new_title = $_POST['new_title'];
 
-    if (!empty($new_title)) {
+    if (!empty($new_title)) {       
         $stmt = $db->prepare("UPDATE tasks t 
                               JOIN lists l ON t.list_id = l.id 
                               SET t.title = ? 
@@ -79,7 +79,7 @@ if (isset($_GET['list_id'])) {
     $_SESSION['list_id'] = $list_id;
 }
 
-$orderBy = "title ASC"; 
+$orderBy = "title ASC";         
 
 if (isset($_GET['sort']) && isset($_GET['type'])) {
     $sort = $_GET['sort'];  
@@ -94,7 +94,7 @@ if (isset($_GET['sort']) && isset($_GET['type'])) {
 }
 
 $tasks = [];
-if ($list_id > 0) {
+if ($list_id > 0) {                             //chat gpt
     $query = "SELECT id, title, priority, status 
               FROM tasks WHERE list_id = ? ORDER BY $orderBy";
     $tasks_stmt = $db->prepare($query);
