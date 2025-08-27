@@ -1,17 +1,19 @@
 <?php
-session_start();
+session_start(); 
+
 if (!isset($_SESSION['user_id'])) {
     header("Location: log.php");
     exit();
 }
 
+
 include_once './classes/Database.php';
 $db = new Database("localhost", "root", "", "todo");
 
-$user_id = $_SESSION['user_id'];
+$user_id = $_SESSION['user_id']; 
 
 if (isset($_POST['add_list'])) {
-    $title = $_POST['title'];
+    $title = $_POST['title']; 
     if (!empty($title)) {
         $stmt = $db->prepare("INSERT INTO lists (user_id, title) VALUES (?, ?)");
         $stmt->bind_param("is", $user_id, $title);
@@ -24,6 +26,7 @@ $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $lists = $stmt->get_result();
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

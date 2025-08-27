@@ -1,15 +1,16 @@
 <?php
 session_start();
 include_once './classes/Database.php';
-
 $db = new Database("localhost", "root", "", "todo");
 
+// Controle: gebruiker moet ingelogd zijn en er moet een taak-ID meegegeven zijn
 if (!isset($_SESSION['user_id']) || !isset($_GET['id'])) {
-    exit("Task not found or user not logged in");
+    exit("Taak niet gevonden of gebruiker niet ingelogd");
 }
 
-$task_id = $_GET['id'];
+$task_id = $_GET['id']; // Haal taak-ID uit de URL
 
+// Taakgegevens ophalen
 $stmt = $db->prepare("SELECT * FROM tasks WHERE id = ?");
 $stmt->bind_param("i", $task_id);
 $stmt->execute();
@@ -17,35 +18,37 @@ $taskResult = $stmt->get_result();
 $task = $taskResult->fetch_assoc();
 
 if (!$task) {
-    exit("Task not found in database");
+    exit("Taak niet gevonden in de database");
 }
 
+
 if (isset($_POST['upload_file'])) {
-    $file = $_FILES['task_file'];
-    $file_tmp = $file['tmp_name'];
-    $file_name = basename($file['name']);
-    $file_folder = 'images/' . $file_name;
+    $file = $_FILES['task_file']; 
+    $file_tmp = $file['tmp_name']; 
+    $file_name = basename($file['name']); 
+    $file_folder = 'images/' . $file_name; 
 
     if (move_uploaded_file($file_tmp, $file_folder)) {
+
         $stmt = $db->prepare("UPDATE tasks SET files = ? WHERE id = ?");
         $stmt->bind_param("si", $file_folder, $task_id);
         $stmt->execute();
 
-        $file_message = "File uploaded successfully.";
+        $file_message = "Bestand succesvol geüpload.";
 
-        // Refresh task info
+
         $stmt = $db->prepare("SELECT * FROM tasks WHERE id = ?");
         $stmt->bind_param("i", $task_id);
         $stmt->execute();
         $task = $stmt->get_result()->fetch_assoc();
     } else {
-        $file_message = "Error uploading file.";
+        $file_message = "Fout bij uploaden bestand.";
     }
 }
 
+
 if (isset($_POST['btnComment'])) {
     $content = $_POST['comment'];
-
     if (!empty($content)) {
         $user_id = $_SESSION['user_id'];
         $stmt = $db->prepare("INSERT INTO comments (task_id, content, user_id) VALUES (?, ?, ?)");

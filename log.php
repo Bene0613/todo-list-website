@@ -1,15 +1,17 @@
 <?php
 session_start();
-$error_message = "";
+$error_message = ""; // Variabele voor foutmeldingen
+
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $uname = $_POST['username'];
-    $password = $_POST['password'];
+    $uname = $_POST['username']; // Ingevoerde gebruikersnaam
+    $password = $_POST['password']; // Ingevoerd wachtwoord
 
     if (!empty($uname) && !empty($password)) {
+        // Verbinden met de database
         $conn = new mysqli("localhost", "root", "", "todo");
         if ($conn->connect_error) {
-            die("Connection failed: " . $conn->connect_error);
+            die("Verbinding mislukt: " . $conn->connect_error);
         }
 
         $stmt = $conn->prepare("SELECT * FROM users WHERE username = ?");
@@ -22,27 +24,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $row = $result->fetch_assoc();
 
                 if (password_verify($password, $row['password'])) {
-                    $_SESSION['user_id'] = $row['id'];
-                    header("Location: index.php");
+                    $_SESSION['user_id'] = $row['id']; // Sessie starten
+                    header("Location: index.php"); // Doorsturen naar lijstenpagina
                     exit();
                 } else {
-                    $error_message = "Incorrect password.";
+                    $error_message = "Wachtwoord onjuist.";
                 }
             } else {
-                $error_message = "No user found with that username.";
+                $error_message = "Geen gebruiker gevonden met die naam.";
             }
 
             $stmt->close();
-        } else {
-            $error_message = "Failed to prepare the query.";
         }
-
         $conn->close();
     } else {
-        $error_message = "Please fill in both username and password.";
+        $error_message = "Vul zowel gebruikersnaam als wachtwoord in.";
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

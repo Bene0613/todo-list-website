@@ -12,7 +12,7 @@ $db = new Database("localhost", "root", "", "todo");
 $user_id = $_SESSION['user_id'];
 
 if (isset($_GET['id'])) {
-    $task_id = $_GET['id'];         //bron Web tech knowledge youtube
+    $task_id = $_GET['id'];
     $del_stmt = $db->prepare("DELETE FROM tasks WHERE id = ?");
     $del_stmt->bind_param("i", $task_id);
     $del_stmt->execute();
@@ -36,7 +36,7 @@ if (isset($_POST['add_task'])) {
         $stmt->bind_param("iss", $list_id, $task_name, $priority);
         $stmt->execute();
 
-        $_SESSION['list_id'] = $list_id;
+        $_SESSION['list_id'] = $list_id; // Huidige lijst onthouden
     }
 }
 
@@ -44,7 +44,8 @@ if (isset($_POST['save_edit'])) {
     $task_id = $_POST['task_id'];
     $new_title = $_POST['new_title'];
 
-    if (!empty($new_title)) {       
+    if (!empty($new_title)) {
+        // Updaten alleen als de taak echt van de gebruiker is
         $stmt = $db->prepare("UPDATE tasks t 
                               JOIN lists l ON t.list_id = l.id 
                               SET t.title = ? 
@@ -53,34 +54,11 @@ if (isset($_POST['save_edit'])) {
         $stmt->execute();
     }
 
-    header("Location: taskIndex.php"); 
+    header("Location: taskIndex.php");
     exit();
 }
 
-if (isset($_GET['list_id'])) {
-    $list_id = $_GET['list_id'];
-
-    $check_stmt = $db->prepare("SELECT id FROM lists WHERE id = ? AND user_id = ?");
-    $check_stmt->bind_param("ii", $list_id, $user_id);
-    $check_stmt->execute();
-    if ($check_stmt->get_result()->num_rows === 0) {
-        $list_id = 0; 
-    }
-
-    $_SESSION['list_id'] = $list_id;
-} elseif (isset($_SESSION['list_id'])) {
-    $list_id = $_SESSION['list_id'];
-} else {
-    $lists_stmt = $db->prepare("SELECT id FROM lists WHERE user_id = ? LIMIT 1");
-    $lists_stmt->bind_param("i", $user_id);
-    $lists_stmt->execute();
-    $first_list = $lists_stmt->get_result()->fetch_assoc();
-    $list_id = $first_list ? $first_list['id'] : 0;
-    $_SESSION['list_id'] = $list_id;
-}
-
 $orderBy = "title ASC";         
-
 if (isset($_GET['sort']) && isset($_GET['type'])) {
     $sort = $_GET['sort'];  
     $type = $_GET['type']; 
@@ -94,7 +72,7 @@ if (isset($_GET['sort']) && isset($_GET['type'])) {
 }
 
 $tasks = [];
-if ($list_id > 0) {                             //chat gpt
+if ($list_id > 0) {
     $query = "SELECT id, title, priority, status 
               FROM tasks WHERE list_id = ? ORDER BY $orderBy";
     $tasks_stmt = $db->prepare($query);
