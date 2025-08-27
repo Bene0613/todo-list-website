@@ -1,6 +1,6 @@
 <?php
 session_start();
-include_once './classes/Database.php';
+include_once 'Database.php';
 $db = new Database("localhost", "root", "", "todo");
 
 // Controle: gebruiker moet ingelogd zijn en er moet een taak-ID meegegeven zijn

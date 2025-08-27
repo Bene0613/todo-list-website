@@ -7,7 +7,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 
-include_once './classes/Database.php';
+include_once 'Database.php';
 $db = new Database("localhost", "root", "", "todo");
 
 $user_id = $_SESSION['user_id']; 

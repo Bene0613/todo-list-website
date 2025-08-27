@@ -6,14 +6,16 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-include_once './classes/Database.php';
+include_once 'Database.php';
 $db = new Database("localhost", "root", "", "todo");
 
 $user_id = $_SESSION['user_id'];
 
+$list_id = $_SESSION['list_id'] ?? 0;
+
 if (isset($_GET['id'])) {
     $task_id = $_GET['id'];
-    $del_stmt = $db->prepare("DELETE FROM tasks WHERE id = ?");
+    $del_stmt = $db->prepare("DELETE FROM tasks WHERE id = ?");         //web tech knowledge youtube
     $del_stmt->bind_param("i", $task_id);
     $del_stmt->execute();
 
@@ -29,14 +31,15 @@ if (isset($_POST['add_task'])) {
     $check_stmt = $db->prepare("SELECT id FROM lists WHERE id = ? AND user_id = ?");
     $check_stmt->bind_param("ii", $list_id, $user_id);
     $check_stmt->execute();
+    $result = $check_stmt->get_result();
 
-    if ($check_stmt->get_result()->num_rows > 0) {
+    if ($result->num_rows > 0) {
         $stmt = $db->prepare("INSERT INTO tasks (list_id, title, priority, status, created_at) 
                               VALUES (?, ?, ?, 'To Do', NOW())");
         $stmt->bind_param("iss", $list_id, $task_name, $priority);
         $stmt->execute();
 
-        $_SESSION['list_id'] = $list_id; // Huidige lijst onthouden
+        $_SESSION['list_id'] = $list_id; 
     }
 }
 
@@ -44,8 +47,7 @@ if (isset($_POST['save_edit'])) {
     $task_id = $_POST['task_id'];
     $new_title = $_POST['new_title'];
 
-    if (!empty($new_title)) {
-        // Updaten alleen als de taak echt van de gebruiker is
+    if (!empty($new_title)) {                   //chatgpt
         $stmt = $db->prepare("UPDATE tasks t 
                               JOIN lists l ON t.list_id = l.id 
                               SET t.title = ? 
@@ -58,7 +60,7 @@ if (isset($_POST['save_edit'])) {
     exit();
 }
 
-$orderBy = "title ASC";         
+$orderBy = "title ASC";  //chatgpt
 if (isset($_GET['sort']) && isset($_GET['type'])) {
     $sort = $_GET['sort'];  
     $type = $_GET['type']; 
@@ -70,21 +72,28 @@ if (isset($_GET['sort']) && isset($_GET['type'])) {
         $orderBy = "$type $direction";
     }
 }
-
 $tasks = [];
 if ($list_id > 0) {
-    $query = "SELECT id, title, priority, status 
-              FROM tasks WHERE list_id = ? ORDER BY $orderBy";
+    $query = "SELECT id, title, priority, status FROM tasks WHERE list_id = ? ORDER BY $orderBy";
     $tasks_stmt = $db->prepare($query);
     $tasks_stmt->bind_param("i", $list_id);
     $tasks_stmt->execute();
-    $tasks = $tasks_stmt->get_result();
+    $result = $tasks_stmt->get_result();
+
+    while ($row = $result->fetch_assoc()) {
+        $tasks[] = $row;
+    }
 }
 
 $lists_stmt = $db->prepare("SELECT id, title FROM lists WHERE user_id = ?");
 $lists_stmt->bind_param("i", $user_id);
 $lists_stmt->execute();
-$lists = $lists_stmt->get_result();
+$result = $lists_stmt->get_result();
+
+$lists = [];
+while ($row = $result->fetch_assoc()) {
+    $lists[] = $row;
+}
 ?>
 
 <!DOCTYPE html>
@@ -187,17 +196,9 @@ h1 {
     text-align: right;
 }
 
-.task .priority.high {
-    color: #FF6B6B;
-}
-
-.task .priority.medium {
-    color: #FFD700;
-}
-
-.task .priority.low {
-    color: #4CAF50;
-}
+.task .priority.high { color: #FF6B6B; }
+.task .priority.medium { color: #FFD700; }
+.task .priority.low { color: #4CAF50; }
 
 .task a {
     margin-left: 10px;
@@ -205,9 +206,7 @@ h1 {
     text-decoration: none;
 }
 
-.task a:hover {
-    color: aquamarine;
-}
+.task a:hover { color: aquamarine; }
 
 .task form input[type="text"] {
     padding: 5px;
@@ -244,7 +243,6 @@ h1 {
 }
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
-
 </head>
 <body>
 
@@ -260,24 +258,24 @@ h1 {
             <option value="Low">Low</option>
         </select>
         <select name="list_id">
-            <?php while($list = $lists->fetch_assoc()): ?>
+            <?php foreach ($lists as $list): ?>
                 <option value="<?php echo $list['id']; ?>" <?php echo ($list['id'] == $list_id) ? 'selected' : ''; ?>>
                     <?php echo htmlspecialchars($list['title']); ?>
                 </option>
-            <?php endwhile; ?>
+            <?php endforeach; ?>
         </select>
         <input type="submit" name="add_task" value="Add Task">
     </form>
 
     <div class="sorting">
-        <strong>Sort by:</strong>
+        <strong>Sort by:</strong>          
         <a href="taskIndex.php?sort=ascending&type=title">Title ↑</a> | 
         <a href="taskIndex.php?sort=descending&type=title">Title ↓</a> |
         <a href="taskIndex.php?sort=ascending&type=priority">Priority ↑</a> | 
         <a href="taskIndex.php?sort=descending&type=priority">Priority ↓</a>
     </div>
 
-    <?php while($task = $tasks->fetch_assoc()): ?>
+    <?php foreach($tasks as $task): ?>
     <div class="task">
         <div class="name">
             <?php if (isset($_GET['edit_id']) && $_GET['edit_id'] == $task['id']): ?>
@@ -304,7 +302,7 @@ h1 {
             <a href="taskIndex.php?id=<?php echo $task['id']; ?>" onclick="return confirm('Delete this task?');">🗑️</a> 
         </div>
     </div>
-    <?php endwhile; ?>
+    <?php endforeach; ?>
 
     <div class="back">
         <a href="index.php">← Back to lists</a>
