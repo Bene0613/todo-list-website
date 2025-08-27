@@ -1,44 +1,33 @@
 <?php
 session_start();
-$error_message = ""; // Variabele voor foutmeldingen
-
+$error_message = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $uname = $_POST['username']; // Ingevoerde gebruikersnaam
-    $password = $_POST['password']; // Ingevoerd wachtwoord
+    $uname = $_POST['username'];
+    $password = $_POST['password'];
 
     if (!empty($uname) && !empty($password)) {
-        // Verbinden met de database
-        $conn = new mysqli("localhost", "root", "", "todo");
-        if ($conn->connect_error) {
-            die("Verbinding mislukt: " . $conn->connect_error);
-        }
+        include_once 'Database.php';
+        $db = new Database();
 
-        $stmt = $conn->prepare("SELECT * FROM users WHERE username = ?");
-        if ($stmt) {
-            $stmt->bind_param("s", $uname);
-            $stmt->execute();
-            $result = $stmt->get_result();
+        $stmt = $db->prepare("SELECT id, password FROM users WHERE username = ?");
+        $stmt->bind_param("s", $uname);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-            if ($result && $result->num_rows > 0) {
-                $row = $result->fetch_assoc();
-
-                if (password_verify($password, $row['password'])) {
-                    $_SESSION['user_id'] = $row['id']; // Sessie starten
-                    header("Location: index.php"); // Doorsturen naar lijstenpagina
-                    exit();
-                } else {
-                    $error_message = "Wachtwoord onjuist.";
-                }
+        if ($user = $result->fetch_assoc()) {
+            if (password_verify($password, $user['password'])) {
+                $_SESSION['user_id'] = $user['id'];
+                header("Location: index.php");
+                exit();
             } else {
-                $error_message = "Geen gebruiker gevonden met die naam.";
+                $error_message = "Incorrect password.";
             }
-
-            $stmt->close();
+        } else {
+            $error_message = "No user found with this username.";
         }
-        $conn->close();
     } else {
-        $error_message = "Vul zowel gebruikersnaam als wachtwoord in.";
+        $error_message = "Please enter both username and password.";
     }
 }
 ?>

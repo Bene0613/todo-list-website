@@ -1,7 +1,8 @@
 <?php
 session_start();
 include_once 'Database.php';
-$db = new Database("localhost", "root", "", "todo");
+$db = new Database();
+
 
 // Controle: gebruiker moet ingelogd zijn en er moet een taak-ID meegegeven zijn
 if (!isset($_SESSION['user_id']) || !isset($_GET['id'])) {

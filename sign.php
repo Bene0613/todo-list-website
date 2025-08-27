@@ -10,13 +10,14 @@ if (!empty($_POST)) {
     $options = ['cost' => 14];
     $hash = password_hash($password, PASSWORD_DEFAULT, $options);
 
-    $conn = new mysqli("localhost", "root", "", "todo");
+    include_once 'Database.php';
+    $db = new Database();
     if ($conn->connect_error) {
         die("Verbinding mislukt: " . $conn->connect_error);
     }
 
     // Check of e-mailadres al bestaat
-    $check = $conn->prepare("SELECT id FROM users WHERE email = ?");
+    $check = $db->prepare("SELECT id FROM users WHERE email = ?");
     $check->bind_param("s", $email);
     $check->execute();
     $check->store_result();
@@ -25,14 +26,14 @@ if (!empty($_POST)) {
         $error = true; // E-mailadres bestaat al
     } else {
         // Nieuwe gebruiker toevoegen
-        $stmt = $conn->prepare("INSERT INTO users (username, email, password) VALUES (?,?,?)");
+        $stmt = $db->prepare("INSERT INTO users (username, email, password) VALUES (?,?,?)");
         $stmt->bind_param("sss", $uname, $email, $hash);
         $stmt->execute();
 
         $new_user_id = $stmt->insert_id;
 
         // Automatisch een standaardlijst aanmaken
-        $stmt2 = $conn->prepare("INSERT INTO lists (user_id, title) VALUES (?, 'My First List')");
+        $stmt2 = $db->prepare("INSERT INTO lists (user_id, title) VALUES (?, 'My First List')");
         $stmt2->bind_param("i", $new_user_id);
         $stmt2->execute();
 

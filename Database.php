@@ -2,8 +2,14 @@
 class Database {
     private $conn;
 
-    public function __construct($host, $user, $pass, $dbname) {
-        $this->conn = new mysqli($host, $user, $pass, $dbname);
+    public function __construct(
+        $host = "tramway.proxy.rlwy.net", 
+        $user = "root", 
+        $pass = "bueESodMuIeGggbVuKVzEDFdbefuJEgo", 
+        $dbname = "railway",
+        $port = 24724
+    ) {
+        $this->conn = new mysqli($host, $user, $pass, $dbname, $port);
 
         if ($this->conn->connect_error) {
             die("Connection failed: " . $this->conn->connect_error);
